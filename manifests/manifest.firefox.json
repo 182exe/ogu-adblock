@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ogu adblock",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "blocks promo elements on oguser.com.",
   "browser_specific_settings": {
     "gecko": {
