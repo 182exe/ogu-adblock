@@ -6,7 +6,7 @@ web extension to block rainbet ads on oguser.com.
 
 support for firefox and chrome is included.
 - firefox: you can install the extension from its [firefox add-ons page](https://addons.mozilla.org/en-US/firefox/addon/oguadblock/)
-- chrome: you can download it from the [releases section](https://github.com/182exe/ogu-adblock/releases/) and load it unpacked. details above that download.
+- chrome: you can download **chrome.zip** from the [releases section](https://github.com/182exe/ogu-adblock/releases/) and load it unpacked. open **chrome://extensions**, turn on Developer Mode, unzip the download, then click “Load unpacked” and select the unzipped folder.
 
 ## build
 
