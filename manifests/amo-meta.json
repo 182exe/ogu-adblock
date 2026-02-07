@@ -1,0 +1,11 @@
+{
+    "summary": {
+        "en-US": "blocks promotional elements on oguser.com."
+    },
+    "categories": [
+        "other"
+    ],
+    "version": {
+        "license": "MIT"
+    }
+}

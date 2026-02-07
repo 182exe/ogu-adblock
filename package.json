@@ -1,0 +1,16 @@
+{
+    "name": "ogu-adblock",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build:chrome": "node scripts/build.js chrome",
+        "build:firefox": "node scripts/build.js firefox",
+        "package:chrome": "npm run build:chrome && node scripts/zip.js chrome",
+        "package:firefox": "npm run build:firefox && node scripts/zip.js firefox",
+        "sign:firefox": "web-ext sign --source-dir dist/firefox --channel unlisted --artifacts-dir dist/firefox-signed"
+    },
+    "devDependencies": {
+        "archiver": "^7.0.1",
+        "web-ext": "^9.2.0"
+    }
+}

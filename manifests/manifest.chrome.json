@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "ogu adblock",
+  "version": "1.0.0",
+  "description": "blocks promo elements on oguser.com.",
+  "action": {
+    "default_title": "ogu adblock"
+  },
+  "permissions": [],
+  "host_permissions": ["https://oguser.com/*", "https://www.oguser.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://oguser.com/*", "https://www.oguser.com/*"],
+      "js": ["content/blocker.js"],
+      "run_at": "document_end"
+    }
+  ]
+}

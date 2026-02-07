@@ -1,0 +1,117 @@
+name: distribute extension
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: deps
+        run: npm ci
+
+      - name: package chrome
+        run: npm run package:chrome
+
+      - name: build firefox
+        run: npm run package:firefox
+
+      - name: validate xpi (lint)
+        run: npx web-ext lint --source-dir dist/firefox
+
+      - name: upload bundles
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-bundles
+          path: |
+            dist/chrome.zip
+            dist/firefox.zip
+
+  sign-firefox:
+    runs-on: ubuntu-latest
+    needs: build
+    outputs:
+      has_secrets: ${{ steps.amo.outputs.has_secrets }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: deps
+        run: npm ci
+
+      - name: build xpi
+        run: npm run build:firefox
+
+      - name: check amo secrets
+        id: amo
+        env:
+          AMO_ISSUER: ${{ secrets.AMO_ISSUER }}
+          AMO_SECRET: ${{ secrets.AMO_SECRET }}
+        run: |
+          if [ -n "$AMO_ISSUER" ] && [ -n "$AMO_SECRET" ]; then
+            echo "has_secrets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secrets=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: sign xpi
+        if: ${{ steps.amo.outputs.has_secrets == 'true' }}
+        continue-on-error: true
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_ISSUER }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_SECRET }}
+          WEB_EXT_APPROVAL_TIMEOUT: "0"
+        run: |
+          npx web-ext sign \
+            --source-dir dist/firefox \
+            --channel listed \
+            --amo-metadata manifests/amo-meta.json \
+            --artifacts-dir dist/firefox-signed
+
+      - name: upload signed xpi
+        if: ${{ steps.amo.outputs.has_secrets == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-signed
+          path: dist/firefox-signed
+          if-no-files-found: ignore
+
+  release-chrome:
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+      - name: download bundles
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-bundles
+          path: dist
+
+      - name: publish release (chrome)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/chrome.zip
+
